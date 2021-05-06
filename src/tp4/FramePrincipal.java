@@ -83,6 +83,12 @@ public class FramePrincipal extends JFrame {
 	    getContentPane().add(btnEj2, "2, 7, right, top");
 	    
 	    JButton btnEj3 = new JButton("Ejercicio 3");
+	    btnEj3.addActionListener(new ActionListener() {
+	    	public void actionPerformed(ActionEvent e) {
+	    		FrameEj3 window = new FrameEj3();
+				window.setVisible(true);
+	    	}
+	    });
 	    getContentPane().add(btnEj3, "2, 9, right, top");
 	    
 	    setVisible(true);

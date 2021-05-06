@@ -13,6 +13,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowEvent;
 import java.util.ArrayList;
+import java.util.regex.Pattern;
 
 import javax.swing.border.EtchedBorder;
 import javax.swing.JLabel;
@@ -101,10 +102,7 @@ public class FrameEj2 extends JFrame {
 		pButtons.setBounds(370, 60, 144, 123);
 		panel.add(pButtons);
 		pButtons.setLayout(new GridLayout(0, 1, 0, 0));
-		
-		JButton btnCalcular = new JButton("CALCULAR");
-		pButtons.add(btnCalcular);
-		
+
 		JButton btnSalir = new JButton("SALIR");
 		btnSalir.addActionListener(new EventoCerrar(this));
 		pButtons.add(btnSalir);
@@ -140,6 +138,10 @@ public class FrameEj2 extends JFrame {
 		JLabel lblCondicion = new JLabel("Condicion: ");
 		lblCondicion.setBounds(34, 57, 93, 21);
 		pNotas_1.add(lblCondicion);
+		
+		JButton btnCalcular = new JButton("CALCULAR");
+		btnCalcular.addActionListener(new EventoCalcular(txtNota1,txtNota2, txtNota3, cmbAprobado, txtPromedio,txtCondicion));
+		pButtons.add(btnCalcular);
 		
 		JButton btnNuevo = new JButton("NUEVO");
 		btnNuevo.addActionListener(new EventoNuevo(txtNota1,txtNota2, txtNota3, cmbAprobado, txtPromedio,txtCondicion));
@@ -198,79 +200,119 @@ class EventoNuevo implements ActionListener
 	}
 }
 
-class EventoNuevos implements ActionListener
+class EventoCalcular implements ActionListener
 {
-	JTextField txtNombre;
-	JTextField txtApellido;
-	JTextField txtTelefono;
-	JTextField txtFechaNacimiento;
+	JTextField txtNota1; 
+	JTextField txtNota2;
+	JTextField txtNota3;
+	JComboBox<String> cmbAprobado;
+	JTextField txtPromedio;
+	JTextField txtCondicion;
 	
-	JLabel lblInfoIngresada;
-	EventoNuevos(JTextField txtNombre, JTextField txtApellido, JTextField txtTelefono, JTextField txtFechaNacimiento, JLabel lblInfo)
+	public EventoCalcular(JTextField txtNota1, JTextField txtNota2, JTextField txtNota3, JComboBox<String> cmbAprobado , JTextField txtPromedio, JTextField txtCondicion) 
 	{
-		this.txtNombre = txtNombre;
-		this.txtApellido = txtApellido;
-		this.txtTelefono = txtTelefono;
-		this.txtFechaNacimiento = txtFechaNacimiento;
-		
-		this.lblInfoIngresada = lblInfo;
+		this.txtNota1 = txtNota1;
+		this.txtNota2 = txtNota2;
+		this.txtNota3 = txtNota3;
+		this.cmbAprobado = cmbAprobado;
+		this.txtPromedio = txtPromedio;
+		this.txtCondicion = txtCondicion;
 	}
+	
 	@Override
 	public void actionPerformed(ActionEvent e) {
-		boolean noHayError = true;
-		String nombre = txtNombre.getText();
-		if(Utils.isNullOrEmpty(nombre))
+		boolean esCalculable = true;
+		// Validar si son numeros
+		if(!esNumeroValido(this.txtNota1.getText()))
 		{
-			noHayError = false;
-			txtNombre.setBackground(Color.red);
+			esCalculable = false;
+			txtNota1.setBackground(Color.red);
 		}
 		else
 		{
-			txtNombre.setBackground(Color.white);
+			txtNota1.setBackground(Color.white);
 		}
 		
-		String apellido = txtApellido.getText();
-		if(Utils.isNullOrEmpty(apellido))
+		if(!esNumeroValido(this.txtNota2.getText()))
 		{
-			noHayError = false;
-			txtApellido.setBackground(Color.red);
+			esCalculable = false;
+			txtNota2.setBackground(Color.red);
 		}
 		else
 		{
-			txtApellido.setBackground(Color.white);
+			txtNota2.setBackground(Color.white);
 		}
 		
-		String telefono = txtTelefono.getText();
-		if(Utils.isNullOrEmpty(telefono))
+		if(!esNumeroValido(this.txtNota3.getText()))
 		{
-			noHayError = false;
-			txtTelefono.setBackground(Color.red);
+			esCalculable = false;
+			txtNota3.setBackground(Color.red);
 		}
 		else
 		{
-			txtTelefono.setBackground(Color.white);
+			txtNota3.setBackground(Color.white);
 		}
-		
-		String fecha = txtFechaNacimiento.getText();
-		if(Utils.isNullOrEmpty(fecha))
-		{
-			noHayError = false;
-			txtFechaNacimiento.setBackground(Color.red);
-		}
-		else
-		{
-			txtFechaNacimiento.setBackground(Color.white);
-		}
-		
-		if(noHayError)
-		{
-			lblInfoIngresada.setText("Nombre y Apellido: " +nombre + ", "+ apellido + ". Tel: " + telefono + " Fecha: " + fecha );
-			lblInfoIngresada.setVisible(true);
-		}
-		else
-		{
-			lblInfoIngresada.setVisible(false);
-		}
+		if(esCalculable)
+			Calcular();
 	}
+	
+	private void Calcular() {
+
+		double nota1 = Double.parseDouble(this.txtNota1.getText());
+		double nota2 = Double.parseDouble(this.txtNota2.getText());
+		double nota3 = Double.parseDouble(this.txtNota3.getText());
+
+		double promedio = (nota1 + nota2 + nota3) / 3.0;
+		promedio = Math.round(promedio * 10) / 10.0;
+		this.txtPromedio.setText(String.valueOf(promedio));
+
+		if((nota1 >= 8 && nota2 >= 8 && nota3 >= 8) && (String)this.cmbAprobado.getSelectedItem() == "Aprobado")
+			this.txtCondicion.setText("Promocionado");	
+
+		else if((String) this.cmbAprobado.getSelectedItem() != "Aprobado" || (nota1 < 6 || nota2 < 6 || nota3 < 6))
+			this.txtCondicion.setText("Libre");
+		else if(promedio >= 6 && (String)this.cmbAprobado.getSelectedItem() == "Aprobado")
+			this.txtCondicion.setText("Regular");
+
+	}
+
+	private static boolean esNumeroValido(String s) {
+		s = s.replace(",",".");
 		
+		final String Digits     = "(\\p{Digit}+)";
+		final String HexDigits  = "(\\p{XDigit}+)";
+		// an exponent is 'e' or 'E' followed by an optionally 
+		// signed decimal integer.
+		final String Exp        = "[eE][+-]?"+Digits;
+		final String fpRegex    =
+		    ("[\\x00-\\x20]*"+ // Optional leading "whitespace"
+		    "[+-]?(" +         // Optional sign character
+		    "NaN|" +           // "NaN" string
+		    "Infinity|" +      // "Infinity" string
+		    
+
+		    // Digits ._opt Digits_opt ExponentPart_opt FloatTypeSuffix_opt
+		    "((("+Digits+"(\\.)?("+Digits+"?)("+Exp+")?)|"+
+
+		    // . Digits ExponentPart_opt FloatTypeSuffix_opt
+		    "(\\.("+Digits+")("+Exp+")?)|"+
+
+		    // Hexadecimal strings
+		    "((" +
+		    // 0[xX] HexDigits ._opt BinaryExponent FloatTypeSuffix_opt
+		    "(0[xX]" + HexDigits + "(\\.)?)|" +
+
+		    // 0[xX] HexDigits_opt . HexDigits BinaryExponent FloatTypeSuffix_opt
+		    "(0[xX]" + HexDigits + "?(\\.)" + HexDigits + ")" +
+
+		    ")[pP][+-]?" + Digits + "))" +
+		    "[fFdD]?))" +
+		    "[\\x00-\\x20]*");// Optional trailing "whitespace"
+		if (Pattern.matches(fpRegex, s)){
+		   double number = Double.valueOf(s);
+		   return number >= 1 && number <=10;
+		} else {
+		   return false;
+		}
+	}	
 }

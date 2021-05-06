@@ -1,5 +1,7 @@
 package tp4;
 
+import java.util.regex.Pattern;
+
 public class Utils {
 	public static boolean isNullOrEmpty(String s) {
 	    return s == null || s == "" || s.length() == 0;
